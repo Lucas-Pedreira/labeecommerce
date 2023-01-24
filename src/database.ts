@@ -13,7 +13,7 @@ export const users: TUser[]=[
     }
 ]
 
-export const product: TProduct[]=[
+export const products: TProduct[]=[
     {
         id: "123",
         name: "Camisa 1 Santos FC",
@@ -64,22 +64,22 @@ export function createProduct (id: string, name: string, price: number, CATEGORY
         price,
         category: CATEGORY
     }
-    product.push(newProduct)
+    products.push(newProduct)
     console.log("Produto adicionado com sucesso");
 }
 
 export function getAllProducts(): TProduct[]{
-    return product
+    return products
 }
 
 export function getProductById(idToSearch: string): TProduct[] | undefined {
-    return (product.filter((product) => {
+    return (products.filter((product) => {
         return product.id === idToSearch
     }))
 }
 
 export function queryProductsByName(q: string){
-    const query = product.filter(
+    const query = products.filter(
         (products) => {
             return(products.name.toLowerCase().includes(q.toLowerCase()))
         }
