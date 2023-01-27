@@ -61,3 +61,50 @@ WHERE id LIKE "p1";
 --Edit User by ID 
 UPDATE users  
 SET password = "nova123"
+WHERE id = "a001";
+
+--Edit Product by ID
+UPDATE products
+SET name = "Meias", price = 40
+WHERE id = "p6";
+
+--Get All Users ASC
+SELECT * FROM users
+ORDER BY email ASC;
+
+--Get All Products price ASC
+SELECT * FROM products
+ORDER BY price ASC
+LIMIT 20;
+
+--Get All Products
+SELECT * FROM products
+WHERE price >= 100 AND price <= 300
+ORDER BY price ASC;
+
+CREATE TABLE purchases (
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    total_price REAL UNIQUE NOT NULL,
+    paid INTEGER NOT NULL,
+    delivered_at TEXT,
+    buyer_id TEXT NOT NULL,
+    FOREIGN KEY (buyer_id) REFERENCES users(id)
+);
+
+DROP TABLE purchases;
+
+SELECT * FROM purchases;
+
+INSERT INTO purchases (id, total_price, paid, delivered_at, buyer_id)
+VALUES
+    ("p1", 80, 1, NULL, "a001"),
+    ("p3", 90, 1, NULL, "a001"),
+    ("p2", 400, 0, NULL, "a002"),
+    ("p6", 40, 0, NULL, "a002"),
+    ("p4", 300, 1, "2023-01-20", "a004"),
+    ("p5", 250, 1, "2023-01-20", "a004");
+
+SELECT * FROM purchases
+INNER JOIN users
+ON purchases.buyer_id = users.id
+WHERE users.id = "a001";
