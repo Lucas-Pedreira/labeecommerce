@@ -26,6 +26,38 @@ VALUES
 ("p4", "Relógio", 300, "Acessórios"),
 ("p5", "Óculos de sol", 250, "Acessórios");
 
+
+--Get All Users
 SELECT * FROM users;
 
+--Get All Products
 SELECT * FROM products;
+
+--Search Product By Name
+SELECT * FROM products
+WHERE name LIKE "%Relógio";
+
+--Create User
+INSERT INTO users
+VALUES
+("a004", "di@gmail.com", "di123");
+
+--Create Product
+INSERT INTO products
+VALUES ("p6", "Meia", 30, "Roupas");
+
+--Get Product by ID
+SELECT * FROM products
+WHERE id LIKE "p3";
+
+--Delete User by ID
+DELETE FROM users
+WHERE id LIKE "a003";  
+
+--Delete Product by ID 
+DELETE FROM products
+WHERE id LIKE "p1"; 
+
+--Edit User by ID 
+UPDATE users  
+SET password = "nova123"
