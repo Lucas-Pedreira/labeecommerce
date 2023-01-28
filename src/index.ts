@@ -2,6 +2,7 @@ import { users, products, purchase, createUser, getAllUsers, createProduct, getA
 import { CATEGORY, TProduct, TPurchase, TUser } from "./types";
 import express, {Request, Response} from 'express';
 import cors from 'cors';
+import { db } from "./database/knex";
 
 const app = express()
 
@@ -16,43 +17,59 @@ app.get('/ping', (req: Request, res: Response) => {
     res.send('Pong')
 })
 
-app.get(`/users`, (req: Request, res: Response) => {
+//GET ALL USERS
+app.get(`/users`, async (req: Request, res: Response) => {
     try{
-        res.status(200).send(getAllUsers())
+        const result = await db.raw(`
+            SELECT * FROM users`)
+        res.status(200).send(result)
     }catch(error:any){
         console.log(error)
 
         if(res.statusCode === 200){
             res.status(500)
         }
+        if(error instanceof Error){
         res.send(error.message)
+    }else{
+        res.send("Erro inesperado")
+    }
     }
 })
 
-app.get(`/products`, (req: Request, res: Response) => {
+//GET ALL PRODUCTS
+app.get(`/products`, async (req: Request, res: Response) => {
     try{
-        res.status(200).send(getAllProducts())    
+        const result = await db.raw(`
+            SELECT * FROM products`)
+        res.status(200).send(result)    
     }catch(error:any){
        console.log(error)
 
         if(res.statusCode === 200){
             res.status(500)
         }
+        if(error instanceof Error){
         res.send(error.message)
+    }else{
+        res.send("Erro inesperado")
+    }
     }
 })
 
-app.get(`/products/search`, (req: Request, res: Response) => {
+app.get(`/products/search`, async (req: Request, res: Response) => {
     try{
         const q = req.query.q as string
-        if(q.length<=0){
+        if(q.length<1){
             res.status(400)
             throw new Error("Deve ter pelo menos um caractere")
         }
-        const result = products.filter((product) => {
-            return product.name.toLowerCase().includes(q.toLowerCase())    
-        })
+        const result = await db.raw(`
+        SELECT * FROM products
+        WHERE name LIKE %${q}%`)    
+        
         res.status(200).send(result)
+    
     }catch(error:any){
         console.log(error)
         if(res.statusCode === 200){
@@ -62,39 +79,74 @@ app.get(`/products/search`, (req: Request, res: Response) => {
     }
 })
 
-app.post(`/users`, (req: Request, res: Response) => {
-    try{
-        const {id, email, password} = req.body as TUser
-        
-        if(!id){
-            res.status(404)
-            throw new Error("Adicione um ID para criar o usuario")
+
+//CREATE USER
+app.post('/users', async(req: Request, res: Response) => {
+    try {
+    const {id, name, email, password } = req.body
+
+        if (id !== undefined){   
+        if (typeof id !== "string"){
+         res.status(400);
+            throw new Error ("ID tem que ser string");
         }
-        if(!email){
-            res.status(404)
-            throw new Error("Adicione um email para criar o usuario")
+        } else {
+            res.status(400);
+                throw new Error ("Insira uma ID para o usuario");
         }
-        if(!password){
-            res.status(404)
-            throw new Error("Adicione uma senha para criar o usuario")
+        if (name !== undefined){   
+            if (typeof name !== "string"){
+            res.status(400);
+                throw new Error ("Name deve ser string");
+            }
+            } else {
+                res.status(400);
+                throw new Error ("Insira um nome para o usuario");
+            }
+        if (email !== undefined){
+            if (typeof email !== "string"){
+                res.status(400);
+                throw new Error ("E-mail precisa ser string");
+            }
+        } else {
+            res.status(400);
+            throw new Error ("Insira um email para o usuario");
         }
-        if(users.find((user) => user.id === id)){
-            res.status(404)
-            throw new Error("ID não disponivel, tente outro por favor");
+        if (password !== undefined){
+            if (typeof password !== "string"){
+                res.status(400);
+                throw new Error ("Password deve ser string");
+            }
+        } else {
+            res.status(400);
+            throw new Error ("Insira uma senha para o usuario");
         }
-        if(users.find((user) => user.email === email)){
-            res.status(404)
-            throw new Error("email não disponivel, tente outro por favor");
+        const [searchUserbyEmail] = await db("users").where({email})
+
+        if(searchUserbyEmail){
+            res.status(400)
+            throw new Error("E-mail já cadastrado, tente outro por favor")
         }
 
-        createUser(id, email, password)
-        res.status(201).send("Novo usuário registrado com sucesso")
-    }catch(error:any){
+        const newUser:TUser ={
+            id,
+            name,
+            email,
+            password,
+        }
+
+        await db("users").insert(newUser)
+    res.status(201).send("Cliente cadastrado com sucesso")
+    } catch (error) {
         console.log(error)
         if(res.statusCode === 200){
             res.status(500)
         }
-        res.send(error.message)
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        } 
     }
 })
 
